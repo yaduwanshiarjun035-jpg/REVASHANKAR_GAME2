@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🥚 Catch the Eggs! 🎮</title>
+    <style>
+        body {
+            margin: 0;
+            background: linear-gradient(to bottom, #87CEEB, #E0F6FF);
+            font-family: 'Arial', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+        #gameContainer {
+            position: relative;
+            width: 400px;
+            height: 500px;
+            background: #aadbaa; /* Grass field background */
+            border: 4px solid #333;
+            border-radius: 10px;
+            box-shadow: 0px 10px 20px rgba(0,0,0,0.3);
+            overflow: hidden;
+            cursor: none; /* Hide mouse cursor inside game */
+        }
+        #basket {
+            position: absolute;
+            bottom: 10px;
+            left: 170px;
+            width: 70px;
+            height: 30px;
+            background-color: #8B4513; /* Brown basket */
+            border-radius: 0 0 15px 15px;
+            border: 2px solid #5c2d0c;
+        }
+        #basket::after {
+            content: "🪹";
+            font-size: 24px;
+            position: absolute;
+            top: -15px;
+            left: 18px;
+        }
+        #egg {
+            position: absolute;
+            top: -40px;
+            left: 180px;
+            font-size: 30px;
+        }
+        #scoreBoard {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            font-size: 20px;
+            font-weight: bold;
+            color: #333;
+            background: rgba(255,255,255,0.7);
+            padding: 5px 10px;
+            border-radius: 5px;
+        }
+        #gameOverScreen {
+            display: none;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            font-size: 24px;
+        }
+        #restartBtn {
+            margin-top: 15px;
+            padding: 10px 20px;
+            font-size: 18px;
+            background-color: #ffc107;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+<div id="gameContainer">
+    <div id="scoreBoard">Score: <span id="score">0</span></div>
+    <div id="egg">🥚</div>
+    <div id="nest "></div>
+    
+    <div id="gameOverScreen">
+        <h2>❌ Game Over!</h2>
+        <p>Aapka Score: <span id="finalScore">0</span></p>
+        <button id="restartBtn" onclick="resetGame()">Fir se Khelein</button>
+    </div>
+</div>
+
+<script>
+    const container = document.getElementById('gameContainer');
+    const basket = document.getElementById('basket');
+    const egg = document.getElementById('egg');
+    const scoreDisplay = document.getElementById('score');
+    const gameOverScreen = document.getElementById('gameOverScreen');
+    const finalScoreDisplay = document.getElementById('finalScore');
+
+    let basketX = 170;
+    let eggX = 180;
+    let eggY = -40;
+    let eggSpeed = 4;
+    let score = 0;
+    let gameInterval;
+    let isGameOver = false;
+
+    // 1. Basket ko Mouse ya Touch se hilana
+    container.addEventListener('mousemove', (e) => {
+        if (isGameOver) return;
+        const rect = container.getBoundingClientRect();
+        let mouseX = e.clientX - rect.left;
+        nest  = mouseX - 35; // Center basket on mouse
+        
+        // Boundaries checks
+        if (nest  < 0) nest  = 0;
+        if (nest  > 330) nest  = 330;
+        
+        basket.style.left = nest  + 'px';
+    });
+
+    // Touch support mobiles ke liye
+    container.addEventListener('touchmove', (e) => {
+        if (isGameOver) return;
+        const rect = container.getBoundingClientRect();
+        let touchX = e.touches[0].clientX - rect.left;
+        nest  = touchX - 45;
+        if (nest  < 0) nest  = 0;
+        if (nest > 330) nest  = 330;
+        basket.style.left = nest  + 'px';
+    });
+
+    // 2. Game Loop (Ande ko niche girana aur collision check karna)
+    function gameLoop() {
+        eggY += eggSpeed;
+        
+        // Agar anda niche gir gaya
+        if (eggY > 470) {
+            // Check karein kya basket ne ande ko pakda?
+            if (eggX >= nest - 20 && eggX <= nest  + 60) {
+                score++;
+                scoreDisplay.innerText = score;
+                eggY = -40; // Wapas upar bhejo
+                eggX = Math.floor(Math.random() * 350); // Nayi random jagah
+                egg.style.left = eggX + 'px';
+                
+                // Score badhne par speed thodi badhao taaki game mushkil ho
+                if (score % 5 === 0) {
+                    eggSpeed += 1;
+                }
+            } else {
+                // Agar miss ho gaya toh Game Over
+                endGame();
+            }
+        }
+        
+        egg.style.top = eggY + 'px';
+    }
+
+    function startGame() {
+        gameInterval = setInterval(gameLoop, 20);
+    }
+
+    function endGame() {
+        isGameOver = true;
+        clearInterval(gameInterval);
+        finalScoreDisplay.innerText = score;
+        gameOverScreen.style.display = 'flex';
+    }
+
+    function resetGame() {
+        score = 0;
+        eggSpeed = 4;
+        eggY = -40;
+        isGameOver = false;
+        scoreDisplay.innerText = score;
+        gameOverScreen.style.display = 'none';
+        eggX = Math.floor(Math.random() * 350);
+        egg.style.left = eggX + 'px';
+        startGame();
+    }
+
+    // Game Shuru karein
+    startGame();
+</script>
+
+</body>
+</html>
